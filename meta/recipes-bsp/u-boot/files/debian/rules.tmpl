@@ -12,6 +12,15 @@ export CROSS_COMPILE=$(DEB_HOST_GNU_TYPE)-
 SET_CROSS_BUILD_TOOLS=CROSS_BUILD_TOOLS=y
 endif
 
+# inject debian multi-arch include path
+KCFLAGS += -I/usr/include/$(DEB_HOST_MULTIARCH) -I/usr/$(DEB_HOST_MULTIARCH)/include
+HOSTCFLAGS += -I/usr/include/$(DEB_BUILD_MULTIARCH) -I/usr/$(DEB_BUILD_MULTIARCH)/include
+# define host architecture bitwidth
+KCFLAGS += -DBITS_PER_LONG=$(DEB_HOST_ARCH_BITS)
+
+export KCFLAGS
+export HOSTCFLAGS
+
 override_dh_auto_build:
 	$(MAKE) $(PARALLEL_MAKE) ${U_BOOT_CONFIG}
 	$(MAKE) $(PARALLEL_MAKE) ${U_BOOT_BIN}
