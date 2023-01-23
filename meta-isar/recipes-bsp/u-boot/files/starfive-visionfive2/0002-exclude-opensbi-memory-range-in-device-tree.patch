@@ -1,0 +1,40 @@
+From 0e037ddfc425ad716afb0120db8c6e92fe9a2802 Mon Sep 17 00:00:00 2001
+From: Felix Moessbauer <felix.moessbauer@siemens.com>
+Date: Mon, 30 Jan 2023 11:05:01 +0800
+Subject: [PATCH 2/2] exclude opensbi memory range in device tree
+
+This patch explicitly excludes the memory range of the OpenSBI in the
+built-in device tree. When booting EFI, the efi loader has to know
+about that zone before loading the device tree for Linux, otherwise
+it tries to access 0x40000000, leading to an access violation.
+
+Signed-off-by: Felix Moessbauer <felix.moessbauer@siemens.com>
+---
+ arch/riscv/dts/starfive_visionfive2.dts | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
+
+diff --git a/arch/riscv/dts/starfive_visionfive2.dts b/arch/riscv/dts/starfive_visionfive2.dts
+index 4dcfa1bacb..9c1dce7363 100644
+--- a/arch/riscv/dts/starfive_visionfive2.dts
++++ b/arch/riscv/dts/starfive_visionfive2.dts
+@@ -34,6 +34,17 @@
+ 		reg = <0x0 0x40000000 0x1 0x0>;
+ 	};
+ 
++	reserved-memory {
++			#size-cells = <2>;
++			#address-cells = <2>;
++			ranges;
++
++			opensbi {
++				reg = <0x00 0x40000000 0x00 0x80000>;
++				no-map;
++			};
++	};
++
+ 	soc {
+ 	};
+ };
+-- 
+2.30.2
+

@@ -1,0 +1,30 @@
+From 3849b7fa6b35a5a1729c9d605d448d97862bcb5d Mon Sep 17 00:00:00 2001
+From: Felix Moessbauer <felix.moessbauer@siemens.com>
+Date: Fri, 27 Jan 2023 12:36:13 +0800
+Subject: [PATCH 1/2] fix offset of env data block on jh7110
+
+Xref: https://github.com/starfive-tech/u-boot/issues/39
+
+Signed-off-by: Felix Moessbauer <felix.moessbauer@siemens.com>
+---
+ configs/starfive_visionfive2_defconfig | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
+
+diff --git a/configs/starfive_visionfive2_defconfig b/configs/starfive_visionfive2_defconfig
+index 45c1767d34..032d208e77 100644
+--- a/configs/starfive_visionfive2_defconfig
++++ b/configs/starfive_visionfive2_defconfig
+@@ -1,8 +1,8 @@
+ CONFIG_RISCV=y
+ CONFIG_SYS_MALLOC_F_LEN=0x10000
+ CONFIG_NR_DRAM_BANKS=1
+-CONFIG_ENV_SIZE=0x10000
+-CONFIG_ENV_OFFSET=0xF0000
++CONFIG_ENV_SIZE=0x100000
++CONFIG_ENV_OFFSET=0xF00000
+ CONFIG_SPL_DM_SPI=y
+ CONFIG_DEFAULT_DEVICE_TREE="starfive_visionfive2"
+ CONFIG_SPL_MMC_SUPPORT=y
+-- 
+2.30.2
+
