@@ -1,0 +1,89 @@
+From 5aefdcad0950c244d826988a8bd2f90584399849 Mon Sep 17 00:00:00 2001
+From: Heinrich Schuchardt <heinrich.schuchardt@canonical.com>
+Date: Wed, 12 Oct 2022 14:59:51 +0200
+Subject: [PATCH 2/2] riscv: support building double-float modules
+
+The riscv32 toolchain for GCC-12 provided by kernel.org contains libgcc.a
+compiled for double-float. To link to it we have to adjust how we build
+U-Boot.
+
+As U-Boot actually does not use floating point at all this should not
+make a significant difference for the produced binaries.
+
+Signed-off-by: Heinrich Schuchardt <heinrich.schuchardt@canonical.com>
+Reviewed-by: Rick Chen <rick@andestech.com>
+Reviewed-by: Leo Yu-Chi Liang <ycliang@andestech.com>
+---
+ arch/riscv/Kconfig  | 15 +++++++++++++++
+ arch/riscv/Makefile | 15 ++++++++++++---
+ 2 files changed, 27 insertions(+), 3 deletions(-)
+
+diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
+index 0cf51799fe..25ed0ba1cf 100644
+--- a/arch/riscv/Kconfig
++++ b/arch/riscv/Kconfig
+@@ -161,6 +161,21 @@ config RISCV_ISA_C
+ 	  when building U-Boot, which results in compressed instructions in the
+ 	  U-Boot binary.
+ 
++config RISCV_ISA_F
++	bool "Standard extension for Single-Precision Floating Point"
++	default y
++	help
++	  Adds "F" to the ISA string passed to the compiler.
++
++config RISCV_ISA_D
++	bool "Standard extension for Double-Precision Floating Point"
++	depends on RISCV_ISA_F
++	default y
++	help
++	  Adds "D" to the ISA string passed to the compiler and changes the
++	  riscv32 ABI from ilp32 to ilp32d and the riscv64 ABI from lp64 to
++	  lp64d.
++
+ config RISCV_ISA_A
+ 	def_bool y
+ 
+diff --git a/arch/riscv/Makefile b/arch/riscv/Makefile
+index 53d1194ffb..4963b5109b 100644
+--- a/arch/riscv/Makefile
++++ b/arch/riscv/Makefile
+@@ -5,15 +5,22 @@
+ 
+ ifeq ($(CONFIG_ARCH_RV64I),y)
+ 	ARCH_BASE = rv64im
+-	ABI = lp64
++	ABI_BASE = lp64
+ endif
+ ifeq ($(CONFIG_ARCH_RV32I),y)
+ 	ARCH_BASE = rv32im
+-	ABI = ilp32
++	ABI_BASE = ilp32
+ endif
+ ifeq ($(CONFIG_RISCV_ISA_A),y)
+ 	ARCH_A = a
+ endif
++ifeq ($(CONFIG_RISCV_ISA_F),y)
++	ARCH_F = f
++endif
++ifeq ($(CONFIG_RISCV_ISA_D),y)
++	ARCH_D = d
++	ABI_D = d
++endif
+ ifeq ($(CONFIG_RISCV_ISA_C),y)
+ 	ARCH_C = c
+ endif
+@@ -24,7 +31,9 @@ ifeq ($(CONFIG_CMODEL_MEDANY),y)
+ 	CMODEL = medany
+ endif
+ 
+-RISCV_MARCH = $(ARCH_BASE)$(ARCH_A)$(ARCH_C)
++
++RISCV_MARCH = $(ARCH_BASE)$(ARCH_A)$(ARCH_F)$(ARCH_D)$(ARCH_C)
++ABI = $(ABI_BASE)$(ABI_D)
+ 
+ # Newer binutils versions default to ISA spec version 20191213 which moves some
+ # instructions from the I extension to the Zicsr and Zifencei extensions.
+-- 
+2.30.2
+
